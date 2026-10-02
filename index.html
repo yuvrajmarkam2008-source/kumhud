@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kumhud — AI Study Assistant</title>
+  <meta name="description" content="Kumhud is an AI study assistant for students. Ask questions and learn step by step.">
+  <style>
+    :root{--bg:#f6f8ff;--card:#fff;--text:#172033;--muted:#64748b;--primary:#4f46e5;--primary2:#7c3aed;--border:#e5e7eb}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#eef2ff,#faf5ff);color:var(--text)}
+    .wrap{max-width:1000px;margin:auto;padding:24px 16px 50px}.nav{display:flex;align-items:center;justify-content:space-between;padding:10px 0 28px}
+    .brand{font-size:28px;font-weight:800;letter-spacing:-1px}.badge{font-size:12px;background:#ede9fe;color:#5b21b6;padding:7px 10px;border-radius:999px}
+    .hero{text-align:center;padding:40px 10px 25px}.hero h1{font-size:clamp(36px,7vw,64px);margin:0 0 12px}.hero h1 span{color:var(--primary)}
+    .hero p{max-width:650px;margin:auto;color:var(--muted);font-size:17px;line-height:1.6}
+    .chat{background:rgba(255,255,255,.9);border:1px solid var(--border);border-radius:24px;box-shadow:0 20px 60px rgba(79,70,229,.12);overflow:hidden;margin-top:28px}
+    .messages{min-height:360px;max-height:58vh;overflow:auto;padding:20px}.msg{display:flex;margin:12px 0}.msg.user{justify-content:flex-end}.bubble{max-width:82%;padding:13px 15px;border-radius:17px;line-height:1.55;white-space:pre-wrap}.assistant .bubble{background:#f1f5f9}.user .bubble{background:var(--primary);color:#fff}
+    .composer{border-top:1px solid var(--border);padding:14px;display:flex;gap:10px}.composer textarea{flex:1;resize:none;border:1px solid var(--border);border-radius:15px;padding:13px;font:inherit;min-height:52px;outline:none}.composer textarea:focus{border-color:var(--primary)}
+    button{border:0;border-radius:14px;padding:0 20px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-weight:700;cursor:pointer}.chips{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.chip{border:1px solid #ddd6fe;background:#fff;color:#5b21b6;padding:9px 12px;border-radius:999px;cursor:pointer}
+    .note{font-size:12px;color:var(--muted);text-align:center;padding:10px 18px 18px}.footer{text-align:center;color:var(--muted);font-size:13px;margin-top:24px}
+    @media(max-width:600px){.composer{align-items:stretch}.composer button{width:85px}.bubble{max-width:92%}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><div class="brand">Kumhud</div><div class="badge">AI Study Assistant</div></nav>
+  <section class="hero">
+    <h1>Study smarter with <span>Kumhud</span></h1>
+    <p>Maths, Physics, Chemistry, English aur general study questions ko simple language mein samjho.</p>
+  </section>
+  <div class="chips">
+    <button class="chip" onclick="fill('Quadratic equation x² - 5x + 6 = 0 ko step by step solve karo.')">Maths</button>
+    <button class="chip" onclick="fill('Photosynthesis ko class 10 level par simple Hindi mein samjhao.')">Science</button>
+    <button class="chip" onclick="fill('Newton ke three laws examples ke saath samjhao.')">Physics</button>
+    <button class="chip" onclick="fill('Electrochemistry ka basic concept simple Hindi mein batao.')">Chemistry</button>
+  </div>
+  <section class="chat">
+    <div id="messages" class="messages">
+      <div class="msg assistant"><div class="bubble">Namaste! 👋 Main Kumhud hoon. Apna study question poochho — main concept ko simple steps mein samjhane ki koshish karunga.</div></div>
+    </div>
+    <div class="composer">
+      <textarea id="question" placeholder="Apna question yahan likho..." onkeydown="key(event)"></textarea>
+      <button onclick="ask()">Ask</button>
+    </div>
+    <div class="note">Kumhud educational assistance ke liye hai. Important answers ko apni textbook/teacher se verify karna achha rahega.</div>
+  </section>
+  <div class="footer">© 2026 Kumhud • Made for learning</div>
+</div>
+<script>
+const API_URL = "PASTE_YOUR_WORKER_URL_HERE";
+function fill(t){document.getElementById('question').value=t;document.getElementById('question').focus()}
+function key(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}}
+function add(text,who){const m=document.getElementById('messages');const row=document.createElement('div');row.className='msg '+who;const b=document.createElement('div');b.className='bubble';b.textContent=text;row.appendChild(b);m.appendChild(row);m.scrollTop=m.scrollHeight;return b}
+async function ask(){
+  const q=document.getElementById('question').value.trim(); if(!q)return;
+  add(q,'user');document.getElementById('question').value='';
+  const bubble=add('Soch raha hoon…','assistant');
+  if(API_URL.includes('PASTE_')){bubble.textContent='Website UI ready hai. Ab README ke steps follow karke Worker URL yahan paste karo.';return}
+  try{
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+    const data=await r.json(); if(!r.ok) throw new Error(data.error||'Request failed');
+    bubble.textContent=data.answer||'Answer nahi mila.';
+  }catch(e){bubble.textContent='AI se response nahi mil paaya. Worker URL aur API key setup check karo.'}
+}
+</script>
+</body>
+</html>
